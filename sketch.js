@@ -19,8 +19,8 @@ var g = 0.75;
 let sky;
 let stars;
 let screenScale = 8 / 10;
-let screenWidth = displayWidth;
-let screenHeight = displayHeight;
+let screenWidth = 512;
+let screenHeight = 512;
 let worldWidth = screenWidth;
 let worldHeight = 4 * screenHeight;
 
