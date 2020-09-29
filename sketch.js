@@ -1,6 +1,5 @@
 var dudeClass;
 var pads;
-var numPads;
 var highest;
 var youWon;
 var youLost;
@@ -15,31 +14,13 @@ let marioStandLeft;
 var wins = 0;
 var losses = 0;
 var scroll;
-var g = 0.75;
+var g = 0.8;
 let sky;
 let stars;
-let screenScale = 8 / 10;
-let screenWidth = 512;
-let screenHeight = 512;
-let worldWidth = screenWidth;
-let worldHeight = 4 * screenHeight;
+let worldWidth;
+let worldHeight;
 
 function preload() {
-    colorMode(HSB);
-    sky = createGraphics(worldWidth, worldHeight);
-    stars = createGraphics(worldWidth, worldHeight);
-    stars.stroke(255);
-    stars.strokeWeight(4);
-    for (i = 0; i < worldWidth * worldHeight / 10000; i++) {
-        stars.point(random(0, worldWidth), random(0, worldHeight));
-    }
-    for (let i = 0; i < worldWidth; i++) {
-        for (let j = 0; j < worldHeight; j++) {
-            let c = color('#87CEEB');
-            sky.set(i, j, color(hue(c), 100, 100, (j - screenHeight) / (worldHeight - 2 * screenHeight)));
-        }
-    }
-    sky.updatePixels();
 
     for (var i = 0; i < 16; i++) {
         padFrames[i] = loadImage("pad_" + i + ".png");
@@ -53,19 +34,53 @@ function preload() {
     marioJumpLeft = loadImage("left_jumping.png");
     marioStandRight = loadImage("right_standing.png");
     marioStandLeft = loadImage("left_standing.png");
+    //     sky = loadImage("sky.png");
+    //     stars = loadImage("stars.png");
+
 }
 
 function setup() {
-    //frameRate(5);
+
+    pixelDensity(1);
+
+    createCanvas(displayWidth * 2, displayHeight * 2 * 0.8);
+
+    worldWidth = width;
+    worldHeight = 12 * height;
+
     colorMode(HSB);
-    createCanvas(screenWidth, screenHeight);
+    sky = createGraphics(worldWidth, worldHeight);
+    stars = createGraphics(worldWidth, worldHeight);
+    stars.stroke(255);
+    for (i = 0; i < worldWidth * worldHeight / 10000; i++) {
+        stars.strokeWeight(random(1, 5));
+        stars.point(random(0, worldWidth), random(0, worldHeight));
+    }
+
+    //         for (let i = 0; i < worldWidth; i++) {
+    //             for (let j = 0; j < worldHeight; j++) {
+    //                 
+    //                 sky.set(i, j, color(hue(c), 100, 80, (j - worldHeight/2) / (worldHeight/2)));
+    //             }
+    //         }
+    //         sky.updatePixels();
+
+    sky.strokeWeight(1);
+    let c = color('#87CEEB');
+    for (let j = 0; j < worldHeight; j++) {
+        sky.stroke(color(hue(c), 100, 80, (j - worldHeight / 2) / (worldHeight / 2)));
+        sky.line(0, j, width, j);
+    }
+
+    //frameRate(5);
+
     resetSketch();
 }
 
 function resetSketch() {
     scroll = 0;
     endGameCounter = 0;
-    numPads = 100;
+    numPads = 150;
     highest = 0;
     pads = [];
 
@@ -80,16 +95,19 @@ function resetSketch() {
     youLost = false;
     dude = new dudeClass();
     pads[0] = new pad(-width,0,2 * width,false);
-    for (var i = 1; i < numPads; i++) {
-        var Fx = random(-width / 2, width / 2);
-        var Fy = -100 * ceil(random((worldHeight - height) / 100));
-        var Fw = 128;
-        pads[i] = new pad(Fx,Fy,Fw,false);
-        if (Fy < highest) {
-            highest = Fy;
+    for (var y = -100; y > height - worldHeight; y += -100) {
+        for (var i = 0; i < 2; i++) {
+            var Fx = random(-width / 2, width / 2);
+            var Fw = 128;
+            pads.push(new pad(Fx,y,Fw,false));
         }
+        if (y < highest) {
+            highest = y;
+        }
+
     }
-    for (var i = 0; i < numPads; i++) {
+
+    for (var i = 0; i < pads.length; i++) {
         if (pads[i].Fy == highest) {
             pads[i].winner = true;
         }
@@ -102,8 +120,29 @@ function draw() {
     translate(0, scroll);
     translate(width / 2, height);
 
+    var leftPressed = false;
+    var rightPressed = false;
+    var jumpPressed = false;
+    for (var i = 0; i < touches.length; i++) {
+        if (touches[i].y > 0.85 * height) {
+            if (touches[i].x < 0.25 * width) {
+                var leftPressed = true;
+            } else if (touches[i].x > 0.25 * width && touches[i].x < 0.5 * width) {
+                var rightPressed = true;
+            } else {
+                var jumpPressed = true;
+            }
+        }
+    }
+
+    dude.Tx = rightPressed - leftPressed;
+
+    if (jumpPressed) {
+        dude.jump()
+    }
+
     dude.move();
-    for (var i = 0; i < numPads; i++) {
+    for (var i = 0; i < pads.length; i++) {
         dude.checkLanding(pads[i]);
         pads[i].show();
     }
@@ -125,7 +164,7 @@ function winORloose() {
     } else if (youLost) {
         textSize(120);
         textAlign(CENTER, CENTER);
-        text('OOPS', width / 2, height * 7 / 8);
+        text('OOPS', width / 2, height / 4);
         endGameCounter++;
     }
 
@@ -137,6 +176,35 @@ function winORloose() {
     textAlign(LEFT, CENTER);
     text("WON: " + wins, 10, 20);
     text("LOSS: " + losses, 10, 40);
+
+    stroke(0, 100, 100, 0.1);
+    strokeWeight(12);
+    textSize(100);
+    textAlign(CENTER, CENTER);
+
+    y = 0.75 * height;
+    h = height - y;
+
+    x = 0;
+    w = 0.25 * width;
+    fill(0, 0, 100, 0.1);
+    rect(x, y, w, h);
+    fill(128, 0, 100);
+    text("<", x + w / 2, y + h / 2);
+
+    x = 0.25*width;
+    w = 0.25 * width;
+    fill(0, 0, 100, 0.1);
+    rect(x, y, w, h);
+    fill(128, 0, 100);
+    text(">", x + w / 2, y + h / 2);
+
+    x = 0.5*width;
+    w = 0.5 * width;
+    fill(0, 0, 100, 0.1);
+    rect(x, y, w, h);
+    fill(128, 0, 100);
+    text("^", x + w / 2, y + h / 2);
 
 }
 
@@ -150,7 +218,7 @@ function pad(Fx, Fy, Fw, winner) {
 
     this.show = function() {
 
-        image(padFrames[floor(this.frame / 6)], this.Fx, this.Fy);
+        image(padFrames[floor(this.frame / 4)], this.Fx, this.Fy);
 
         if (!this.winner) {
             if ((this == dude.on && dude.Py != 0) || this.falling) {
@@ -158,15 +226,15 @@ function pad(Fx, Fy, Fw, winner) {
                 this.falling = true;
             }
 
-            if (floor(this.frame / 6) == 10) {
-                for (var i = 0; i < numPads; i++) {
+            if (floor(this.frame / 4) == 10) {
+                for (var i = 0; i < pads.length; i++) {
                     if (pads[i] === this) {
                         pads.splice(i, 1);
-                        numPads--;
                     }
                 }
             }
         }
+
     }
 }
 
@@ -178,6 +246,7 @@ function dudeClass() {
     this.Ax = 0;
     this.Tx = 0;
     this.Ay = 0;
+    this.jumpCounter = 20;
 
     this.show = function() {
 
@@ -212,6 +281,7 @@ function dudeClass() {
         if (this.Px > pad.Fx && this.Px < pad.Fx + pad.Fw && this.Py == pad.Fy && this.Vy >= 0) {
             this.Vy = 0;
             this.Ay = 0;
+            this.jumpCounter = 20;
             this.on = pad;
             if (pad.winner) {
                 youWon = true
@@ -224,9 +294,14 @@ function dudeClass() {
     }
 
     this.jump = function() {
-        if (this.Ay == 0) {
+        if (this.jumpCounter > 0) {
             this.Ay = 1;
-            this.Vy = -20 * sqrt(g);
+            // this.Vy += -6/sqrt(20-this.jumpCounter+1);
+            if (this.jumpCounter == 20) {
+                this.Vy = -15;
+            } else {
+                this.Vy += -2 / sqrt(20 - this.jumpCounter + 1);
+            }
         }
 
     }
@@ -255,6 +330,10 @@ function dudeClass() {
 
         if (this.Py + scroll > -height / 4) {
             scroll = -height / 4 - this.Py
+        }
+
+        if (this.Ay == 1 && this.jumpCounter > 0) {
+            this.jumpCounter--;
         }
 
         this.Py += this.Vy;
