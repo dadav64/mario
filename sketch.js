@@ -124,7 +124,7 @@ function draw() {
     var rightPressed = false;
     var jumpPressed = false;
     for (var i = 0; i < touches.length; i++) {
-        if (touches[i].y > 0.85 * height) {
+        if (touches[i].y > 0.75 * height) {
             if (touches[i].x < 0.25 * width) {
                 var leftPressed = true;
             } else if (touches[i].x > 0.25 * width && touches[i].x < 0.5 * width) {
