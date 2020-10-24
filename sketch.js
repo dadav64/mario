@@ -312,15 +312,15 @@ function dudeClass() {
         this.Vx += this.Ax;
         if (this.Ay == 1) {
             if (this.Tx == 0) {
-                this.Ax = 1.5 * (this.Tx - 1 / 10 * this.Vx);
+                this.Ax = 3.0 * (this.Tx - 1 / 10 * this.Vx);
             } else {
-                this.Ax = 0.25 * (this.Tx - 1 / 10 * this.Vx);
+                this.Ax = 0.5 * (this.Tx - 1 / 10 * this.Vx);
             }
         } else {
             if (this.Tx == 0) {
-                this.Ax = 3 * (this.Tx - 1 / 10 * this.Vx);
+                this.Ax = 4 * (this.Tx - 1 / 10 * this.Vx);
             } else {
-                this.Ax = 0.5 * (this.Tx - 1 / 10 * this.Vx);
+                this.Ax = 0.67 * (this.Tx - 1 / 10 * this.Vx);
             }
         }
 
