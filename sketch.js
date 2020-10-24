@@ -229,7 +229,7 @@ function pad(Fx, Fy, Fw, winner) {
             if (floor(this.frame / 4) == 10) {
                 for (var i = 0; i < pads.length; i++) {
                     if (pads[i] === this) {
-                        pads.splice(i, 1);
+                        //pads.splice(i, 1);
                     }
                 }
             }
